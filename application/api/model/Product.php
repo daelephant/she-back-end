@@ -11,7 +11,7 @@ namespace app\api\model;
 
 class Product extends BaseModel
 {
-    protected $hidden = ['delete_time','update_time','create_time','main_img_id','pivot','from','category_id'];
+    //protected $hidden = ['delete_time','update_time','create_time','main_img_id','pivot','from','category_id'];
 
     public function getMainImgUrlAttr($value,$data){
         return $this->prefixImgUrl($value,$data);
@@ -19,7 +19,7 @@ class Product extends BaseModel
 
     public function imgs()
     {
-       return $this->hasMany('ProductImage','product_id','id');
+       return $this->hasMany('image','only_num','only_num');
     }
 
     public function properties()
@@ -40,18 +40,14 @@ class Product extends BaseModel
         return $products;
     }
 
-    public static function getProductDetail($id)
+    public static function getProductDetail($only_num)
     {
         //使用模型写复杂的SQL
         //Query
         $product = self::with([
-            'imgs' => function($query){
-                $query->with(['imgUrl'])
-                    ->order('order','asc');
-            }
+            'imgs'
         ])
-            ->with(['properties'])
-            ->find($id);
+            ->find($only_num);
         return $product;
     }
 }

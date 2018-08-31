@@ -26,8 +26,13 @@ Route::get('api/:version/theme','api/:version.Theme/getSimpleList');
 Route::get('api/:version/theme/:id','api/:version.Theme/getComplexOne');
 
 Route::get('api/:version/product/recent','api/:version.Product/getRecent');
+Route::post('api/:version/product/newProduct','api/:version.Product/createProduct');
+Route::post('api/:version/product/uploadProduct','api/:version.Product/upload');
+Route::post('api/:version/product/register_1','api/:version.Product/register_1');
+Route::post('api/:version/product/temp_info','api/:version.Product/temp_info');
+
 Route::get('api/:version/product/by_category','api/:version.Product/getAllInCategory');
-Route::get('api/:version/product/:id','api/:version.Product/getOne',[],['id'=>'\d+']);
+Route::get('api/:version/product/:only_num','api/:version.Product/getOne');
 
 //路由分组
 //Route::group('api/:version/product',function(){
