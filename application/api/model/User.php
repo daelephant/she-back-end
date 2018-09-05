@@ -12,8 +12,13 @@ namespace app\api\model;
 class User extends BaseModel
 {
     public function address(){
-        //关联模型
+        //关联模型一对一
         return $this->hasOne('UserAddress','user_id','id');
+    }
+
+    public function product(){
+        //关联模型一对多
+        return $this->hasMany('Product','user_id','id');
     }
 
     public static function getByOpenId($openid){

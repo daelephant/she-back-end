@@ -19,7 +19,7 @@ class Product extends BaseModel
 
     public function imgs()
     {
-       return $this->hasMany('image','only_num','only_num');
+       return $this->hasMany('image','only_num','only_num');//一对多关系
     }
 
     public function properties()
@@ -42,12 +42,22 @@ class Product extends BaseModel
 
     public static function getProductDetail($only_num)
     {
-        //使用模型写复杂的SQL
-        //Query
+        ////使用模型写复杂的SQL
+        ////Query 写关联的order排序
+        //$product = self::with([
+        //    'imgs' => function($query){
+        //        $query->with(['imgUrl'])
+        //        ->order('order','asc');
+        //    }
+        //])
+        //    ->find($only_num);
+
         $product = self::with([
-            'imgs'
-        ])
-            ->find($only_num);
+            'imgs' =>function($query){
+                $query->order('url','desc');
+            }
+
+        ])->find($only_num);
         return $product;
     }
 }

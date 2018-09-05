@@ -42,7 +42,7 @@ return [
     'slave_no'        => '',
     // 是否严格检查字段是否存在
     'fields_strict'   => true,
-    // 数据集返回类型
+    // 数据集返回类型array|collection,注意探空需要用$collection->isEmpty()
     'resultset_type'  => 'collection',
     // 自动写入时间戳字段
     'auto_timestamp'  => false,

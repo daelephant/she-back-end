@@ -14,9 +14,11 @@ use app\api\validate\Count;
 use app\api\validate\IDMustBePostiveInt;
 use app\api\validate\NotEmpty;
 use app\api\validate\ProductNew;
+use app\lib\exception\MissFileException;
 use app\lib\exception\ProductException;
 use app\api\service\Token as TokenService;
 use app\api\service\Order as OrderService;
+use app\lib\exception\SuccessMessage;
 use app\lib\exception\UserException;
 use app\api\model\User as UserModel;
 use think\Db;
@@ -138,60 +140,65 @@ class Product extends BaseController
     function register_1(){
 
         $file = request()->file('image');
+        var_dump($file);
         $flag = 'product-'.(new OrderService())->makeOrderNo();
         // 移动到框架应用根目录/public/uploads/ 目录下
-        $info = $file->move(ROOT_PATH . 'public' . DS . 'images',$flag);
+        $info = $file->validate(['size'=>15728640])->move(ROOT_PATH . 'public' . DS . 'images',$flag);
 
         if($info){
+            return json(new SuccessMessage(),200);
 
-            ////有图片===============================================================
-            //$receive['image']=$info["image"]['savepath'].$info["image"]['savename'];
-            //$receive['time_register']=time();
-            ////image_belong:  headimage idcard_positive idcars_reverse driver_license driving_this
-            //// 建立临时数据表，传好了就等待拼接
-            ////	$receive["on_time"]=time().rand("1111","9999");
-            //$receive["state_register"]="1";
-            //$receive['account']=	$receive["openid"].$receive["program_id"];
-            //$receive['psw']=		md5($receive["openid"].$receive["program_id"]);
             $receive = array();
             $receive['url'] = DS.$info->getSaveName();
             $receive['only_num'] = input('param.only_num');
-
-            //var_dump($receive['only_num']);exit;
-
             if (Db::table('image')->insert($receive))
-                echo 'insert success';
-            //if(M('car_manerger_copy')->add($receive)){
-            //    $this->ajaxReturn(array('state'=>1,'msg'=>'成功'));
-            //}else{
-            //    $this->ajaxReturn(array('state'=>-1,'msg'=>'失败'));
-            //}
+            {return json(new SuccessMessage(),200);}
+
         }else{
             //无图片===============================================================
-            return '无图片';
-            //$this->ajaxReturn(array('status'=>-888,'msg'=>'无上传图片'));
+            return json(new MissFileException(),400);
         }
     }
     //临时表数据拼接之后加入正式信息表
     function temp_info(){
-        //$uid = TokenService::getCurrentUid();
-        $res = input('param.');
-        $product_insert = array();
+
+        $validate = new ProductNew();
+        $validate->goCheck();
+
+        $uid = TokenService::getCurrentUid();
+        $user = UserModel::get($uid);
+
+        if(!$user){
+            throw new UserException();
+        }
+
+        $dataArray = $validate->getDataByRule(input('post.'));//过滤
+
+        $userProduct = $user->product();
+
+
+            //通过关联模型新增一条UserProduct
+        $user->product()->save($dataArray);
+        return json(new SuccessMessage(),201);
+
+
+        //$res = input('param.');
+        //$product_insert = array();
         //var_dump($res);exit;
 
-        if(!empty($res)){
-            $product_insert['category_id'] = $res['name'];
-            $product_insert['brand_id'] = $res['car_num'];
-            $product_insert['summary'] = $res['summary'];
-            $product_insert['only_num'] = $res['only_num'];
-            $product_insert['user_id'] = rand(1,100);
-            //var_dump($product_insert);exit;
-            if (Db::table('product')->insert($product_insert))
-                echo 'insert success';
-
-        }else{
-            return '参数是空数组';
-        }
+        //if(!empty($res)){
+        //    $product_insert['category_id'] = $res['name'];
+        //    $product_insert['brand_id'] = $res['car_num'];
+        //    $product_insert['summary'] = $res['summary'];
+        //    $product_insert['only_num'] = $res['only_num'];
+        //    $product_insert['user_id'] = rand(1,100);
+        //    //var_dump($product_insert);exit;
+        //    if (Db::table('product')->insert($product_insert))
+        //        echo 'insert success';
+        //
+        //}else{
+        //    return '参数是空数组';
+        //}
     }
 }
 

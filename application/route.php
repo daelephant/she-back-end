@@ -55,7 +55,7 @@ Route::get('api/:version/second','api/:version.Address/second');
 
 //order
 Route::post('api/:version/order','api/:version.Order/placeOrder');
-Route::post('api/:version/order/:id','api/:version.Order/getDetail',[],['id'=>'\d+']);
+Route::post('api/:version/order/:id','api/:version.Order/getDetail',[],['id'=>'\d+']);//第三个【】是可选项，第四个是限定id的值类型限定，这里的意思是id必须是正整数（根据需求写正则）
 
 Route::get('api/:version/order/by_user', 'api/:version.Order/getSummaryByUser');
 Route::get('api/:version/order/paginate', 'api/:version.Order/getSummary');

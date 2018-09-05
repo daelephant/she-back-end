@@ -19,6 +19,9 @@ class ProductNew extends BaseValidate
         //'province' => 'require|isNotEmpty',
         //'city' => 'require|isNotEmpty',
         //'country' => 'require|isNotEmpty',
-        'summary' => 'require|isNotEmpty'
+        'summary' => 'require|isNotEmpty',
+        'only_num' => 'require|isNotEmpty',
+        //'new_level' => 'number|between:60,100',
+
     ];
 }
