@@ -138,25 +138,28 @@ class Product extends BaseController
 
     //注册---个人
     function register_1(){
+        Db::startTrans();
+        try {
+            $file = request()->file('image');
+            var_dump($file);
+            $flag = 'product-' . (new OrderService())->makeOrderNo();
+            // 移动到框架应用根目录/public/uploads/ 目录下
+            $info = $file->validate(['size' => 15728640])->move(ROOT_PATH . 'public' . DS . 'images', $flag);
 
-        $file = request()->file('image');
-        var_dump($file);
-        $flag = 'product-'.(new OrderService())->makeOrderNo();
-        // 移动到框架应用根目录/public/uploads/ 目录下
-        $info = $file->validate(['size'=>15728640])->move(ROOT_PATH . 'public' . DS . 'images',$flag);
-
-        if($info){
-            return json(new SuccessMessage(),200);
-
-            $receive = array();
-            $receive['url'] = DS.$info->getSaveName();
-            $receive['only_num'] = input('param.only_num');
-            if (Db::table('image')->insert($receive))
-            {return json(new SuccessMessage(),200);}
-
-        }else{
-            //无图片===============================================================
-            return json(new MissFileException(),400);
+            if ($info) {
+                $receive = array();
+                $receive['url'] = DS . $info->getSaveName();
+                $receive['only_num'] = input('param.only_num');
+                Db::table('image')->insert($receive);
+                Db::commit();
+            } else {
+                //无图片===============================================================
+                return json(new MissFileException(), 400);
+            }
+        }catch
+        (Exception $ex) {
+            Db::rollback();
+            throw $ex;
         }
     }
     //临时表数据拼接之后加入正式信息表
