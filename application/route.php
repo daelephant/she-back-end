@@ -34,6 +34,8 @@ Route::post('api/:version/product/temp_info','api/:version.Product/temp_info');
 Route::get('api/:version/product/by_category','api/:version.Product/getAllInCategory');
 Route::get('api/:version/product/:only_num','api/:version.Product/getOne');
 
+Route::get('api/:version/brand/by_category','api/:version.Brand/getAllInCategory');
+
 //路由分组
 //Route::group('api/:version/product',function(){
 //    Route::get('/recent','api/:version.Product/getRecent');
