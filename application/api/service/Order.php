@@ -113,20 +113,24 @@ class Order
         $status = [
             'pass' => true,
             'orderPrice' => 0,
-            'totalCount' => 0,
+            'totalCount' => 1,
             'pStatusArray' => []
         ];
-        foreach ($this->oProducts as $oProduct) {
-            $pStatus =
-                $this->getProductStatus(
-                    $oProduct['product_id'], $oProduct['count'], $this->products);
-            if (!$pStatus['haveStock']) {
-                $status['pass'] = false;
-            }
-            $status['orderPrice'] += $pStatus['totalPrice'];
-            $status['totalCount'] += $pStatus['counts'];
-            array_push($status['pStatusArray'], $pStatus);
-        }
+        //foreach ($this->oProducts as $oProduct) {
+        //    $pStatus =
+        //        $this->getProductStatus(
+        //            $oProduct['product_id'], $oProduct['count'], $this->products);
+        //    if (!$pStatus['haveStock']) {
+        //        //$status['pass'] = false;
+        //        $status['pass'] = true;
+        //    }
+        //    $status['orderPrice'] += $pStatus['totalPrice'];
+        //    $status['totalCount'] += $pStatus['counts'];
+        //    array_push($status['pStatusArray'], $pStatus);
+        //}
+        //$status['pass'] = true;
+        //$status['orderPrice'] += $pStatus['totalPrice'];
+        //$status['totalCount'] += $pStatus['counts'];
         return $status;
     }
 

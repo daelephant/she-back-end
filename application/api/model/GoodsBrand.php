@@ -1,20 +1,21 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: cyx
- * Date: 2018-06-06
- * Time: 16:38
+ * User: mac
+ * Date: 2018/10/4
+ * Time: 下午4:46
  */
-return [
-    //'img_prefix' => 'http://she.cn/images',
-    //'phone_path' => 'http://she.cn/phone',
-    'img_prefix' => 'http://192.168.0.123:8080/images',
-    'phone_path' => 'http://192.168.0.123:8080/phone',
-    'token_expire_in' => 7200,
-    //'stock_img_prefix' => 'http://stock.cn/Public/Uploads/'
-    'stock_img_prefix' => 'http://stock.cn.192.168.0.123.xip.io/Public/Uploads/',
-    //数据库配置2
-    'db_config2' => [
+
+namespace app\api\model;
+
+
+class GoodsBrand extends BaseModel
+{
+    // 设置当前模型对应的完整数据表名称
+    protected $table = 'p2018_brand';
+
+    // 设置当前模型的数据库连接
+    protected $connection = [
         // 数据库类型
         'type'        => 'mysql',
         // 数据库连接DSN配置
@@ -35,5 +36,9 @@ return [
         'charset'     => 'utf8mb4',
         // 数据库表前缀
         'prefix'      => '',
-    ]
-];
+    ];
+    protected $hidden = ['id','site_url','logo'];
+    //public function getPicAttr($value,$data){
+    //    return $this->prefixImgUrlIgnore($value,$data);
+    //}
+}

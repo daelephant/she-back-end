@@ -8,11 +8,13 @@
 
 namespace app\api\controller\v1;
 
+use app\api\service\Token;
 use app\api\controller\BaseController;
 use app\api\model\Product as ProductModel;
 use app\api\validate\Count;
 use app\api\validate\IDMustBePostiveInt;
 use app\api\validate\NotEmpty;
+use app\api\validate\PagingParameter;
 use app\api\validate\ProductNew;
 use app\lib\exception\MissFileException;
 use app\lib\exception\ProductException;
@@ -25,6 +27,69 @@ use think\Db;
 
 class Product extends BaseController
 {
+    protected $beforeActionList= [
+        'checkPrimaryScope' => ['only' => 'getOneP, getSummaryByUser']
+    ];
+    // 自动写入时间戳
+    //protected $autoWriteTimestamp = false;
+
+
+    public function getSummaryByUser($page=1,$size=15)
+    {
+        $searchData = input('get.');
+        //$search['category_id'] =  $searchData['category'];
+        $search['from'] =  $searchData['styleFrom'];
+        $search['status'] =  $searchData['status'];
+        (new PagingParameter())->goCheck();
+        $uid = Token::getCurrentUid();
+        $pagingOrders = ProductModel::getSummaryByUser($uid,$page,$size,$search);
+        //$pagingOrders是对象
+        if($pagingOrders->isEmpty()){
+            return [
+                'data' => [],
+                'current_page' =>$pagingOrders->getCurrentPage()
+            ];
+        }
+        $data = $pagingOrders;
+        $datares = $data;
+        //$data = $pagingOrders->hidden(['snap_items','snap_address','prepay_id'])->toArray();
+        return [
+            'data' => $data,
+            'current_page' =>$pagingOrders->getCurrentPage()
+        ];
+    }
+
+    //订单详情接口
+    public function getOneP($id)
+    {
+        (new IDMustBePostiveInt())->goCheck();
+        $orderDetail = ProductModel::getProductDetailById($id);
+        if(!$orderDetail)
+        {
+            throw new ProductException();
+        }
+        //return $orderDetail->hidden(['prepay_id']);
+        return $orderDetail;
+    }
+
+    public function getSummary($page=1, $size = 20){
+        //(new PagingParameter())->goCheck();
+//        $uid = Token::getCurrentUid();
+        $pagingOrders = ProductModel::getSummaryByPage($page, $size);
+        if ($pagingOrders->isEmpty())
+        {
+            return [
+                'current_page' => $pagingOrders->currentPage(),
+                'data' => []
+            ];
+        }
+        //$data = $pagingOrders->hidden(['snap_items', 'snap_address'])
+        //    ->toArray();
+        return [
+            'current_page' => $pagingOrders->currentPage(),
+            'data' => $pagingOrders
+        ];
+    }
     public function getRecent($count=15){
         (new Count())->goCheck();
         $products = ProductModel::getMostRecent($count);
@@ -36,6 +101,8 @@ class Product extends BaseController
         $products = $products->hidden(['summary']);
         return $products;
     }
+
+
 
     public function getAllInCategory($id){
         (new IDMustBePostiveInt())->goCheck();
@@ -74,14 +141,9 @@ class Product extends BaseController
 
     }
 
-    //来自TP3.2
-//注册---企业
+
     function register(){
         //program_id、openid
-        //账号： account、密码：psw 、账号名称：name、头像：headimage、邮箱： mail、联系人：linkman、联系电话：linktel 、证件号：certificate_num、性别：sex、车牌号：car_num
-        //idcard_positive：身份证正面、idcars_reverse 身份证反面
-        //driver_license：驾驶证、driving_this：行驶本
-        //state 所属状态（1：个人司机、2：合作单位、3：签约单位）
 
         //如果是司机进来的，账号就是 $_POST["openid"].$_POST["program_id"],密码就是MD5加密的
 
@@ -136,12 +198,12 @@ class Product extends BaseController
         }
     }
 
-    //注册---个人
+    //
     function register_1(){
         Db::startTrans();
         try {
             $file = request()->file('image');
-            var_dump($file);
+            //var_dump($file);
             $flag = 'product-' . (new OrderService())->makeOrderNo();
             // 移动到框架应用根目录/public/uploads/ 目录下
             $info = $file->validate(['size' => 15728640])->move(ROOT_PATH . 'public' . DS . 'images', $flag);
@@ -165,6 +227,8 @@ class Product extends BaseController
     //临时表数据拼接之后加入正式信息表
     function temp_info(){
 
+
+
         $validate = new ProductNew();
         $validate->goCheck();
 
@@ -174,15 +238,17 @@ class Product extends BaseController
         if(!$user){
             throw new UserException();
         }
-
+$test09 = input('post.');
         $dataArray = $validate->getDataByRule(input('post.'));//过滤
-
+         $dataArray['summary'] = $test09['summary'];
+         $dataArray['from'] = $test09['from'];
+         $dataArray['create_time'] = time();
         $userProduct = $user->product();
 
 
             //通过关联模型新增一条UserProduct
         $user->product()->save($dataArray);
-        return json(new SuccessMessage(),201);
+        return json(new SuccessMessage(),200);
 
 
         //$res = input('param.');

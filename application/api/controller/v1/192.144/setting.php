@@ -6,13 +6,9 @@
  * Time: 16:38
  */
 return [
-    //'img_prefix' => 'http://she.cn/images',
-    //'phone_path' => 'http://she.cn/phone',
-    'img_prefix' => 'http://192.168.0.123:8080/images',
-    'phone_path' => 'http://192.168.0.123:8080/phone',
+    'img_prefix' => 'https://apiofcyx.shewuyou.cn/images',
     'token_expire_in' => 7200,
-    //'stock_img_prefix' => 'http://stock.cn/Public/Uploads/'
-    'stock_img_prefix' => 'http://stock.cn.192.168.0.123.xip.io/Public/Uploads/',
+    'stock_img_prefix' => 'https://stock.shewuyou.cn/Public/Uploads/',
     //数据库配置2
     'db_config2' => [
         // 数据库类型
@@ -26,7 +22,7 @@ return [
         // 数据库用户名
         'username'    => 'root',
         // 数据库密码
-        'password'    => 'root',
+        'password'    => 'Cyx.2018',
         // 数据库连接端口
         'hostport'    => '3306',
         // 数据库连接参数

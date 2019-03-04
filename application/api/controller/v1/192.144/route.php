@@ -49,16 +49,13 @@ Route::get('api/:version/brand/repair_brands','api/:version.Brand/getAllbrands')
 
 Route::get('api/:version/category/all','api/:version.Category/getAllCategories');
 Route::get('api/:version/category/allImgs/:id','api/:version.Category/getCategoryImgsById');
-
-
+//User
 Route::get('api/:version/user/userinfo','api/:version.Pay/getUserinfo');
 //Token
 //Route::get('api/:version/category/all','api/:version.Category/getAllCategories');
 Route::post('api/:version/token/user','api/:version.Token/getToken');
 Route::post('api/:version/token/verify','api/:version.Token/verifyToken');
 Route::post('api/:version/token/app','api/:version.Token/getAppToken');
-Route::post('api/:version/token/md5','api/:version.Token/getMd5');
-
 
 //address
 Route::post('api/:version/user/updatephone','api/:version.Address/wxInfo');
@@ -89,9 +86,11 @@ Route::put('api/:version/goods/set_good_status','api/:version.Goods/update_statu
 
 //Pay
 Route::post('api/:version/pay/pre_order', 'api/:version.Pay/getPreOrder');
-Route::post('api/:version/pay/notify', 'api/:version.Pay/receiveNotify');//微信服务器需要调用的接口
+Route::post('api/:version/pay/notify', 'api/:version.Pay/redirectNotify');//微信服务器需要调用的接口
 Route::post('api/:version/pay/re_notify', 'api/:version.Pay/redirectNotify');
 Route::post('api/:version/pay/concurrency', 'api/:version.Pay/notifyConcurrency');
 Route::put('api/:version/pay/set_vip', 'api/:version.Pay/wx_set_vip');
 
 Route::get('api/:version/team/get_teams', 'api/:version.Team/getAllTeam');
+
+

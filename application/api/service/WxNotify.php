@@ -1,9 +1,5 @@
 <?php
 /**
- * Created by 七月
- * Author: 七月
- * 微信公号: 小楼昨夜又秋风
- * 知乎ID: 七月在夏天
  * Date: 2017/2/28
  * Time: 18:12
  */
@@ -13,13 +9,17 @@ namespace app\api\service;
 
 use app\api\model\Order as OrderModel;
 use app\api\model\Product;
+use app\api\model\User;
 use app\api\service\Order as OrderService;
 use app\lib\enum\OrderStatusEnum;
+use app\lib\exception\UserException;
 use app\lib\order\OrderStatus;
 use think\Db;
 use think\Exception;
 use think\Loader;
 use think\Log;
+use app\api\service\Token as TokenService;
+use app\api\model\User as UserModel;
 
 Loader::import('WxPay.WxPay', EXTEND_PATH, '.Api.php');
 
@@ -52,20 +52,32 @@ class WxNotify extends \WxPayNotify
     {
 //        $data = $this->data;
         if ($data['result_code'] == 'SUCCESS') {
-            $orderNo = $data['out_trade_no'];
+            //$orderNo = $data['out_trade_no'];
             Db::startTrans();
             try {
-                $order = OrderModel::where('order_no', '=', $orderNo)->lock(true)->find();
-                if ($order->status == 1) {
-                    $service = new OrderService();
-                    $stockStatus = $service->checkOrderStock($order->id);
-                    if ($stockStatus['pass']) {
-                        $this->updateOrderStatus($order->id, true);
-                        $this->reduceStock($stockStatus);
-                    } else {
-                        $this->updateOrderStatus($order->id, false);
-                    }
+
+                $uid = TokenService::getCurrentUid();
+                $user = UserModel::get($uid);
+
+                if(!$user){
+                    throw new UserException();
                 }
+                $resData = [];
+                $resData['update_time_vip'] = time();
+                $resData['scope'] = 32;
+
+                $user->save($resData);
+                //$order = OrderModel::where('order_no', '=', $orderNo)->lock(true)->find();
+                //if ($order->status == 1) {
+                //    $service = new OrderService();
+                //    $stockStatus = $service->checkOrderStock($order->id);
+                //    if ($stockStatus['pass']) {
+                //        $this->updateOrderStatus($order->id, true);
+                //        $this->reduceStock($stockStatus);
+                //    } else {
+                //        $this->updateOrderStatus($order->id, false);
+                //    }
+                //}
                 Db::commit();
             } catch (Exception $ex) {
                 Db::rollback();

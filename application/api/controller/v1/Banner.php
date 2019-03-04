@@ -29,6 +29,17 @@ class Banner
         if(!$banner){
             throw new MissException();
         }
+        $banner = $banner->hidden(['id','description','items.key_word','items.type']);
+        return json($banner);
+    }
+
+    public function getList($id){
+        (new IDMustBePostiveInt())->goCheck();
+        $banner = BannerModel::getBannerById($id);
+        if(!$banner){
+            throw new MissException();
+        }
+        $banner = $banner->hidden(['id','description','items.key_word','items.type']);
         return json($banner);
     }
 

@@ -107,12 +107,20 @@ class Order extends BaseController
     public function placeOrder(){
         (new OrderPlace())->goCheck();
         //要获取数组参数，专门写法
-        $products = input('post.products/a');
-        $uid = TokenService::getCurrentUid();
+        $products = input('post.orderPrice');
+        //$products = input('post.products/a');
+        //$uid = TokenService::getCurrentUid();
         //在service里面建立一个模型来处理复杂的具体业务逻辑
-
-        $order = new OrderService();
-        $status = $order->place($uid,$products);
+        //
+        //$order = new OrderService();
+        //$status = $order->place($uid,$products);
+        //$status = ['pass'=>true];
+        $status = [
+            'pass' => true,
+            'totalCount' => 1
+        ];
+        $status['orderPrice'] = $products;
+        $status['order_id'] = 'O'.(new OrderService())->makeOrderNo();
         return $status;
     }
 

@@ -86,6 +86,7 @@ class Address extends BaseController
         if(!$user){
             throw new UserException();
         }
+        $data =  input('post.');
         $dataArray = $validate->getDataByRule(input('post.'));//过滤掉不需要的参数
         $userAddress = $user->address();
         if(!$userAddress)
@@ -101,6 +102,23 @@ class Address extends BaseController
         //return $user;
         //我们这里只需要返回是否成功信息
         return json(new SuccessMessage(),201);
+
+    }
+
+    public function wxInfo()
+    {
+        $uid = TokenService::getCurrentUid();//封装的优雅
+        $user = UserModel::get($uid);
+        if(!$user){
+            throw new UserException();
+        }
+        $dataArray = input('post.');
+
+        if($dataArray)
+        {
+            $user->save($dataArray);
+        }
+        return json(new SuccessMessage(),200);
 
     }
 }

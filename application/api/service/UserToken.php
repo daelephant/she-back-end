@@ -13,8 +13,18 @@ namespace app\api\service;
 use app\lib\enum\ScopeEnum;
 use app\lib\exception\TokenException;
 use app\lib\exception\WeChatException;
+use Qcloud\Sms\SmsSingleSender;
 use think\Exception;
 use app\api\model\User as UserModel;
+
+//require_once "qcloudsms/src/index.php";
+//use Qcloud\Sms\SmsSingleSender;
+use think\Loader;
+
+//extend/WxPay/WxPay.Api.php
+//extend/qcloudsms/src/index.php
+Loader::import('qcloudsms.src.index',EXTEND_PATH,'.php');
+
 class UserToken extends Token
 {
     protected $code;
@@ -28,6 +38,12 @@ class UserToken extends Token
         $this->wxAppId = config('wx.app_id');
         $this->wxAppSecret = config('wx.app_secret');
         $this->wxLoginUrl = sprintf(config('wx.login_url'),$this->wxAppId,$this->wxAppSecret,$this->code);
+    }
+    public function getSessionKey($code){
+        //发送HTTP请求：
+        $result = curl_get($this->wxLoginUrl);
+        $wxResult = json_decode($result,true);//当该参数为 TRUE 时，将返回 array 而非 object 。
+       return $wxResult;
     }
 
     public function get($code){
@@ -61,11 +77,28 @@ class UserToken extends Token
         $user = UserModel::getByOpenId($openid);
         if($user){
             $uid = $user->id;
+            $vip = $user->scope;
+            $phone = $user->extend;
+            //$update_time = $user->update_time_vip;
+
         }else{
             $uid = $this->newUser($openid);
         }
         $cachedValue = $this->prepareCachedValue($wxResult,$uid);
         $token = $this->saveToCache($cachedValue);
+        if($user){
+
+            $token = [
+                'token'=>$token,
+                'vip'  =>$vip,
+                'phone'=>$phone,
+                //'vip_create_time'=>$update_time
+            ];
+        }else{
+            $token = [
+                'token'=>$token
+            ];
+        }
         return $token;
     }
     private function saveToCache($cacheValue){
@@ -110,8 +143,49 @@ class UserToken extends Token
 
     private function processLoginError($wxResult){
         throw new WeChatException([
-            'msg' => $wxResult['msg'],
+            //'msg' => $wxResult['msg'],
             'errorCode' => $wxResult['errcode']
         ]);
+    }
+
+    //发送短信
+    function sendSms($vipStatus,$phoneNum,$from,$only_num,$evaluate_price)
+    {
+
+        // 短信应用SDK AppID
+        $appid = 1400168158; // 1400开头
+
+        // 短信应用SDK AppKey
+        $appkey = "1b5b4c04a9ad8649e59e5b95a2390a22";
+
+        // 需要发送短信的手机号码
+        //    $phoneNumbers = ["21212313123", "12345678902", "12345678903"];
+        $phoneNumbers = ["$phoneNum"];
+
+        // 短信模板ID，需要在短信应用中申请
+
+
+        $smsSign = "奢无忧"; // NOTE: 这里的签名只是示例，请使用真实的已申请的签名，签名参数使用的是`签名内容`，而不是`签名ID`
+
+
+        try {
+            $ssender = new SmsSingleSender($appid, $appkey);
+            if ($vipStatus == 'vip'){
+                $templateId = 247294;
+                $params = ["$from","$only_num","$evaluate_price"];
+                $result = $ssender->sendWithParam("86", $phoneNumbers[0], $templateId,
+                    $params, $smsSign, "", "");
+            }else{
+                $templateId = 247293;
+                $params = ["$only_num","$evaluate_price"];
+                $result = $ssender->sendWithParam("86", $phoneNumbers[0], $templateId,
+                    $params, $smsSign, "", "");
+            }
+            $rsp = json_decode($result);
+            echo "发送短信成功";
+        } catch(\Exception $e) {
+            echo var_dump($e);
+        }
+
     }
 }

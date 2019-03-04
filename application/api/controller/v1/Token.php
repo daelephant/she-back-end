@@ -14,8 +14,10 @@ use app\api\service\UserToken;
 use app\api\validate\AppTokenGet;
 use app\api\validate\TokenGet;
 use app\lib\exception\ParameterException;
+use app\lib\exception\UserException;
 use think\Exception;
 use app\api\service\Token as TokenService;
+use app\api\model\User as UserModel;
 
 class Token
 {
@@ -24,6 +26,7 @@ class Token
         (new TokenGet())->goCheck();
         $ut = new UserToken($code);
         $token = $ut->get($code);
+
         //用框架自动返回json格式：
         //return $token;
         return [
@@ -58,6 +61,19 @@ class Token
             'isValid' => $valid
         ];
     }
+
+
+    public function getMd5()
+    {
+        $data = input('post.');
+        $md5 = md5($data['data']);
+        return [
+            'md5' => $md5
+        ];
+    }
+
+
+
 
 
 

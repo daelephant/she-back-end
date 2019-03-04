@@ -15,6 +15,7 @@ use app\lib\exception\OrderException;
 use app\lib\exception\TokenException;
 use think\Exception;
 use think\Loader;
+use think\Log;
 
 //extend/WxPay/WxPay.Api.php
 Loader::import('WxPay.WxPay',EXTEND_PATH,'.Api.php');
@@ -34,7 +35,7 @@ class Pay
     }
 
     //完整业务流程的主方法，类似order
-    public function pay()
+    public function pay($status)
     {
         //订单号可能根本就不存在
         //订单号确实存在，但是，订单号和当前用户是不匹配的，
@@ -43,17 +44,19 @@ class Pay
         //进行库存量检测
         //检测的原则：把最有可能发生的情况的检测放在最前面，这样他一但被检测出来就不会继续后续的步骤了。节约服务器性能
         //第二个原则就是从代码本身的消耗服务器性能来说，消耗服务器性能多的，尽量放后面，先把简单的，对数据库性能消耗小的检测放到前面
-        $this->checkOrderValid();
-        $orderService = new OrderService();
-        $status =  $orderService->checkOrderStock($this->orderID);
-        if (!$status['pass'])
-        {
-            return $status;
-        }
-        return $this->makeWxPreOrder($status['orderPrice']);
+        //$this->checkOrderValid();
+        //$orderService = new OrderService();
+        //$status =  $orderService->checkOrderStock($this->orderID);
+        //if (!$status['pass'])
+        //{
+        //    return $status;
+        //}
+        //return $this->makeWxPreOrder($status['orderPrice']);
+        return $this->makeWxPreOrder($status);
+        //return $this->makeWxPreOrder('0.2');
     }
-
-    private function makeWxPreOrder($totalPrice)
+//微信预订单：
+    private function makeWxPreOrder($status)
     {
         //openid
         $openid = Token::getCurrentTokenVar('openid');
@@ -62,10 +65,12 @@ class Pay
             throw new TokenException();
         }
         $wxOrderData = new \WxPayUnifiedOrder();
-        $wxOrderData->SetOut_trade_no($this->orderNo);
+        //Oc1231此单号必须实时变化
+        $wxOrderData->SetOut_trade_no($status['id']);
+        //$wxOrderData->SetOut_trade_no($this->orderNo);
         $wxOrderData->SetTrade_type('JSAPI');
-        $wxOrderData->SetTotal_fee($totalPrice * 100);//单位是分，所以要转换成元
-        $wxOrderData->SetBody('零食商贩');
+        $wxOrderData->SetTotal_fee($status['orderPrice'] * 100);//单位是分，所以要转换成元
+        $wxOrderData->SetBody('奢无忧');
         $wxOrderData->SetOpenid($openid);
         $wxOrderData->SetNotify_url(config('secure.pay_back_url'));//微信异步通知支付结果
 
@@ -75,6 +80,7 @@ class Pay
     //向微信请求订单号并生成签名
     private function getPaySignature($wxOrderData)
     {
+        //$wxOrder = \WxPayApi::unifiedOrder($wxOrderData);
         $wxOrder = \WxPayApi::unifiedOrder($wxOrderData);
         // 失败时不会返回result_code
         if($wxOrder['return_code'] != 'SUCCESS' || $wxOrder['result_code'] !='SUCCESS'){
@@ -90,8 +96,9 @@ class Pay
 
     private function recordPreOrder($wxOrder){
         // 必须是update，每次用户取消支付后再次对同一订单支付，prepay_id是不同的
-        OrderModel::where('id', '=', $this->orderID)
-            ->update(['prepay_id' => $wxOrder['prepay_id']]);
+        //OrderModel::where('id', '=', $this->orderID)
+        //    ->update(['prepay_id' => $wxOrder['prepay_id']]);
+        //OrderModel::create(['prepay_id' => $wxOrder['prepay_id']]);
     }
 
     // 签名

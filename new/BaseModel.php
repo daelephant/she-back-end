@@ -15,19 +15,12 @@ class BaseModel extends Model
             }
         }else
             $finalUrl = config('setting.img_prefix').$value;
-
         return $finalUrl;
     }
 
     protected function prefixImgUrlIgnore($value,$data){
         $finalUrl = $value;
-        if(substr($value,0,1) == '/'){
-
-            $finalUrl = config('setting.img_prefix').$value;
-        } else{
-
-            $finalUrl = config('setting.stock_img_prefix').$value;
-        }
+        $finalUrl = config('setting.stock_img_prefix').$value;
         return $finalUrl;
     }
     //
