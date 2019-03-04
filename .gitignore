@@ -2,4 +2,6 @@
 composer.lock
 *.log
 public/images
+publicimages/
+runtime/cache
 
